@@ -1,7 +1,8 @@
 import requests
+import streamlit as st
 
-SUPABASE_URL = "https://<your-project>.supabase.co"
-SUPABASE_KEY = "your-api-key"
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
 HEADERS = {
     "apikey": SUPABASE_KEY,
@@ -9,11 +10,11 @@ HEADERS = {
 }
 
 def fetch_latest_players():
-    url = f"{SUPABASE_URL}/rest/v1/latest_player_metrics?select=*&order=rank90avg.asc"
+    url = f"{SUPABASE_URL}/rest/v1/latest_player_metrics?select=*&order=rank365avg.desc"
     return requests.get(url, headers=HEADERS).json()
 
 def fetch_latest_competitions():
-    url = f"{SUPABASE_URL}/rest/v1/latest_competition_ranking?select=*&order=rank90avg_avg.asc"
+    url = f"{SUPABASE_URL}/rest/v1/latest_competition_ranking?select=*&order=rank365avg_avg.desc"
     return requests.get(url, headers=HEADERS).json()
 
 def fetch_player_by_id(person_id):
