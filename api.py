@@ -1,7 +1,8 @@
 import requests
 import streamlit as st
 
-SUPABASE_URL = st.secrets["SUP_URL"]
+SUPABASE_URL = 'https://bvkfmjbkamxntyclcymu.supabase.co'
+
 SUPABASE_KEY = st.secrets["API_KEY"]
 
 HEADERS = {
