@@ -28,7 +28,7 @@ st.title("Rubik's Cube Analytics Dashboard")
 handle_global_search()
 
 # URL Routing
-params = st.experimental_get_query_params()
+params = st.query_params()
 view = params.get("view", [None])[0]
 
 if view == "player":
