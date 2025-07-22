@@ -39,7 +39,7 @@ def show_competition_page(comp_id):
     window = col2.radio("Window", ["90", "365"], horizontal=True)
 
     # Construct y-axis column name
-    y_col = f"{'rank' if metric == 'Ranking' else 'perf'}{window}avg"
+    y_col = f"{'rank' if metric == 'rank' else 'perf'}{window}avg"
     if metric == "Ranking":
         y_col += "_avg"  
 
