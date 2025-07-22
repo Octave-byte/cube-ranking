@@ -64,6 +64,10 @@ def show_competitions_tab():
         lambda x: f"https://www.worldcubeassociation.org/competitions/{x}"
     )
 
+    for col in ["perf90avg", "perf365avg"]:
+        df[col] = df[col] / 100
+
+
     # Rename columns
     df = df.rename(columns={
         "name": "Name",

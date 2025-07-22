@@ -12,11 +12,11 @@ HEADERS = {
 }
 
 def fetch_latest_players():
-    url = f"{SUPABASE_URL}/rest/v1/latest_player_metrics?select=*&order=rank365avg.desc&limit=10000"
+    url = f"{SUPABASE_URL}/rest/v1/latest_player_metrics?select=*&order=rank365avg.asc&limit=10000"
     return requests.get(url, headers=HEADERS).json()
 
 def fetch_latest_competitions():
-    url = f"{SUPABASE_URL}/rest/v1/latest_competition_ranking?select=*&order=rank365avg_avg.desc&limit=10000"
+    url = f"{SUPABASE_URL}/rest/v1/latest_competition_ranking?select=*&order=rank365avg_avg.asc&limit=10000"
     return requests.get(url, headers=HEADERS).json()
 
 def fetch_player_by_id(person_id):
