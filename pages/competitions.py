@@ -37,7 +37,7 @@ def show_competition_page(comp_id):
 
     y_col = f"{metric}{window}avg"
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df["date"], y=df[y_col], name=metric))
+    fig.add_trace(go.Scatter(x=df["date_from"], y=df[y_col], name=metric))
     fig.update_layout(title=f"{metric} {window}d Evolution", xaxis_title="Date", yaxis_title=metric)
     if metric == "rank":
         fig.update_yaxes(autorange="reversed")
