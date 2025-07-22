@@ -50,7 +50,7 @@ def show_players_tab():
     df = df[cols]
 
     # Display entire DataFrame
-    st.dataframe(df, use_container_width=True, hide_index=True, height=10000)
+    st.dataframe(df, use_container_width=True, hide_index=True)
 
 def show_competitions_tab():
     data = get_cached_competitions()
@@ -87,4 +87,4 @@ def show_competitions_tab():
     df = df[cols]
 
     # Display the full DataFrame
-    st.dataframe(df, use_container_width=True, hide_index=True, height=5000)
+    st.dataframe(df, use_container_width=True, hide_index=True)
