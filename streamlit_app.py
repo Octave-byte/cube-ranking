@@ -2,23 +2,27 @@ import streamlit as st
 from api import fetch_player_by_id, fetch_competition_by_id
 from pages.tabs import show_players_tab, show_competitions_tab
 
-st.set_page_config(layout="wide")
-st.title("Rubik's Cube Analytics Dashboard")
-
-
-# URL Routing
 params = st.query_params
 view = params.get("view", [None])[0]
 
 if view == "player":
+    person_id = params.get("personId", [None])[0]
+    st.write(f"Loading player page for: {person_id}")  # Debug line
     from pages.player import show_player_page
-    show_player_page(params.get("personId", [None])[0])
+    show_player_page(person_id)
     st.stop()
 
 elif view == "competition":
+    comp_id = params.get("compId", [None])[0]
+    st.write(f"Loading competition page for: {comp_id}")  # Debug line
     from pages.competition import show_competition_page
-    show_competition_page(params.get("compId", [None])[0])
+    show_competition_page(comp_id)
     st.stop()
+
+# --- Only runs when view is not set ---
+st.set_page_config(layout="wide")
+st.title("Rubik's Cube Analytics Dashboard")
+
 
 def handle_global_search():
     search = st.text_input("Search player or competition ID", placeholder="Enter personId or comp_id...")
