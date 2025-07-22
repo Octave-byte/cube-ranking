@@ -1,65 +1,137 @@
 import streamlit as st
 import pandas as pd
-import requests
-from api import SUPABASE_URL, HEADERS
-from cache import get_cached_players, get_cached_competitions
+from api import fetch_latest_players, fetch_latest_competitions
 
+# --------------------------
+# Player Tab - Preparation
+# --------------------------
 @st.cache_data(ttl=3600)
-def fetch_player_history(person_id):
-    url = f"{SUPABASE_URL}/rest/v1/player_metrics?personId=eq.{person_id}&select=*&order=date.asc&limit=10000"
-    return requests.get(url, headers=HEADERS).json()
+def get_cached_players():
+    return fetch_latest_players()
 
-def show_player_page(person_id):
-    st.header(f"Player Detail: {person_id}")
-    df = pd.DataFrame(fetch_player_history(person_id))
-    if df.empty:
-        st.error("No data found.")
-        return
+player_data = get_cached_players()
+players_df = pd.DataFrame(player_data)
 
-    st.subheader(f"Competitions: {df.shape[0]}")
+# Create WCA Link and internal Name link
+players_df["WCA Link"] = players_df["id"].apply(
+    lambda x: f"https://www.worldcubeassociation.org/persons/{x}"
+)
+players_df["Name"] = players_df.apply(
+    lambda row: f"[{row['name']}](./players/{row['id']})", axis=1
+)
 
-    # Show table with selected metrics
-    columns_to_show = [
-        "date", "rank90best", "rank365best",
-        "average_90", "average_365",
-        "rank90avg", "rank365avg",
-        "rank90best_national", "rank90avg_national",
-        "rank365best_national", "rank365avg_national"
-    ]
-    available_columns = [col for col in columns_to_show if col in df.columns]
-    df_display = df[available_columns].sort_values(by="rank365avg", ascending=True)
+# Convert times from centiseconds to seconds
+for col in ["best_365", "average_365", "best_90", "average_90"]:
+    players_df[col] = players_df[col] / 100
 
-    st.dataframe(df_display, use_container_width=True)
+# Rename columns
+players_df = players_df.rename(columns={
+    "id": "WCA ID",
+    "country": "Country",
+    "best_365": "1 Solve - 365d (s)",
+    "average_365": "5 Solves - 365d (s)",
+    "best_90": "1 Solve - 90d (s)",
+    "average_90": "5 Solves - 90d (s)",
+    "rank90best": "World Ranking - 1 Solve (90d)",
+    "rank90avg": "World Ranking - 5 Solves (90d)",
+    "rank365best": "World Ranking - 1 Solve (365d)",
+    "rank365avg": "World Ranking - 5 Solves (365d)",
+    "rank90best_national": "National Ranking - 1 Solve (90d)",
+    "rank90avg_national": "National Ranking - 5 Solves (90d)",
+    "rank365best_national": "National Ranking - 1 Solve (365d)",
+    "rank365avg_national": "National Ranking - 5 Solves (365d)"
+})
 
-    csv = df_display.to_csv(index=False).encode("utf-8")
-    st.download_button("📄 Download Data as CSV", csv, "player_data.csv", "text/csv")
+# Sort by global 365d average rank
+players_df = players_df.sort_values(by="World Ranking - 5 Solves (365d)", ascending=True)
 
-    if st.button("← Back to main view"):
-        st.query_params.clear()
-        st.rerun()
+# Set column order
+player_columns = ["Name", "Country", "WCA ID", "WCA Link"] + \
+    [col for col in players_df.columns if col not in ["Name", "Country", "WCA ID", "WCA Link"]]
+players_df = players_df[player_columns]
 
-def show_players_tab():
-    st.header("Rubik's Cube Player Rankings")
-    df = pd.DataFrame(get_cached_players())
 
-    countries = df["country"].dropna().unique()
-    selected_country = st.selectbox("Filter by country", ["All"] + sorted(countries.tolist()))
+# --------------------------
+# Competition Tab - Preparation
+# --------------------------
+@st.cache_data(ttl=3600)
+def get_cached_competitions():
+    return fetch_latest_competitions()
 
-    if selected_country != "All":
-        df = df[df["country"] == selected_country]
+comp_data = get_cached_competitions()
+comp_df = pd.DataFrame(comp_data)
 
-    df_display = df.sort_values("rank365avg", ascending=True)
-    st.dataframe(df_display[["name", "country", "rank90avg", "rank365avg"]], use_container_width=True)
+# Create internal and WCA links
+comp_df["Name"] = comp_df.apply(
+    lambda row: f"[{row['name']}](./competitions/{row['comp_id']})",
+    axis=1
+)
+comp_df["WCA Link"] = comp_df["competition_id"].apply(
+    lambda x: f"https://www.worldcubeassociation.org/competitions/{x}"
+)
 
-def show_competitions_tab():
-    st.header("Competition Rankings")
-    df = pd.DataFrame(get_cached_competitions())
+# Convert times from centiseconds to seconds
+for col in ["perf90avg", "perf365avg"]:
+    comp_df[col] = comp_df[col] / 100
 
-    countries = df["country"].dropna().unique()
-    selected_country = st.selectbox("Filter by country", ["All"] + sorted(countries.tolist()))
+# Rename and reformat
+comp_df = comp_df.rename(columns={
+    "city": "City",
+    "country": "Country",
+    "date_from": "Competition Date",
+    "rank90avg_avg": "Average Ranking - Top 10 (90d)",
+    "rank365avg_avg": "Average Ranking - Top 10 (365d)",
+    "perf90avg": "Avg Perf - Top 10 (90d)",
+    "perf365avg": "Avg Perf - Top 10 (365d)"
+})
+comp_df["Competition Date"] = pd.to_datetime(comp_df["Competition Date"]).dt.date
 
-    if selected_country != "All":
-        df = df[df["country"] == selected_country]
+# Sort by 365d average ranking
+comp_df = comp_df.sort_values(by="Average Ranking - Top 10 (365d)", ascending=True)
 
-    df_display = df.sort_values("rank365avg_avg", ascending=True)
-    st.dataframe(df_display[["name", "city", "country", "date_from", "rank90avg_avg", "rank365avg_avg"]], use_container_width=True)
+# Set column order
+comp_columns = ["Name", "City", "Country", "Competition Date", "WCA Link",
+                "Average Ranking - Top 10 (90d)", "Average Ranking - Top 10 (365d)",
+                "Avg Perf - Top 10 (90d)", "Avg Perf - Top 10 (365d)"]
+comp_df = comp_df[comp_columns]
+
+
+# --------------------------
+# Search UI
+# --------------------------
+
+st.title("Rubik's Cube Rankings")
+
+# Fetch IDs for routing logic
+player_ids = {player["id"] for player in get_cached_players()}
+comp_ids = {comp["comp_id"] for comp in get_cached_competitions()}
+
+# Global Search
+search_query = st.text_input("🔍 Search for a Player or Competition by ID", "")
+
+if search_query:
+    if search_query in player_ids:
+        st.success(f"Redirecting to player {search_query}...")
+        st.experimental_rerun()  # Rerun to allow dynamic linking
+        st.markdown(f'<meta http-equiv="refresh" content="0;url=/players/{search_query}" />', unsafe_allow_html=True)
+    elif search_query in comp_ids:
+        st.success(f"Redirecting to competition {search_query}...")
+        st.experimental_rerun()
+        st.markdown(f'<meta http-equiv="refresh" content="0;url=/competitions/{search_query}" />', unsafe_allow_html=True)
+    else:
+        st.warning("No matching player or competition found.")
+
+# --------------------------
+# Streamlit Tabs UI
+# --------------------------
+st.title("Rubik's Cube Rankings")
+
+tab1, tab2 = st.tabs(["🧑 Players", "🏆 Competitions"])
+
+with tab1:
+    st.markdown("### Player Rankings")
+    st.dataframe(players_df, use_container_width=True, hide_index=True)
+
+with tab2:
+    st.markdown("### Top Competitions")
+    st.dataframe(comp_df, use_container_width=True, hide_index=True)
