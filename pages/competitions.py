@@ -12,7 +12,7 @@ def fetch_competition_history(comp_id):
 
 @st.cache_data(ttl=3600)
 def fetch_competition_metadata(comp_id):
-    url = f"{SUPABASE_URL}/rest/v1/competitions?comp_id=eq.{comp_id}&select=name,city,country,date_from&limit=1"
+    url = f"{SUPABASE_URL}/rest/v1/competitions?comp_id=eq.{comp_id}&select=id,name,city,country,date_from&limit=1"
     return requests.get(url, headers=HEADERS).json()
 
 def show_competition_page(comp_id):
@@ -30,6 +30,9 @@ def show_competition_page(comp_id):
     if df.empty:
         st.error("No data.")
         return
+    df = df.merge(meta[["comp_id", "date_from"]], how="left", left_on="competition_id", right_on="comp_id")
+    # Optional: clean up comp_id column if you don't need it after the join
+    df = df.drop(columns=["comp_id"])
 
     col1, col2 = st.columns(2)
     metric = col1.selectbox("Metric", ["perf", "rank"])
