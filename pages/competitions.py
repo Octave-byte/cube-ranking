@@ -30,6 +30,9 @@ def show_competition_page(comp_id):
     if df.empty:
         st.error("No data.")
         return
+    df = df.merge(meta[["comp_id", "date_from"]], how="left", left_on="competition_id", right_on="comp_id")
+    # Optional: clean up comp_id column if you don't need it after the join
+    df = df.drop(columns=["comp_id"])
 
     col1, col2 = st.columns(2)
     metric = col1.selectbox("Metric", ["perf", "rank"])
