@@ -30,11 +30,11 @@ def go_to_competition(comp_id):
 
 # Handle different views
 if st.session_state.current_view == 'player':
-    from pages.player import show_player_page
+    from pages.players import show_player_page
     show_player_page(st.session_state.selected_person_id)
 
 elif st.session_state.current_view == 'competition':
-    from pages.competition import show_competition_page
+    from pages.competitions import show_competition_page
     show_competition_page(st.session_state.selected_comp_id)
 
 else:
