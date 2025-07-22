@@ -12,7 +12,7 @@ def fetch_competition_history(comp_id):
 
 @st.cache_data(ttl=3600)
 def fetch_competition_metadata(comp_id):
-    url = f"{SUPABASE_URL}/rest/v1/competitions?comp_id=eq.{comp_id}&select=id,name,city,country,date_from&limit=1"
+    url = f"{SUPABASE_URL}/rest/v1/competitions?comp_id=eq.{comp_id}&select=id, name,city,country,date_from&limit=1"
     return requests.get(url, headers=HEADERS).json()
 
 def show_competition_page(comp_id):
@@ -30,18 +30,22 @@ def show_competition_page(comp_id):
     if df.empty:
         st.error("No data.")
         return
-    df = df.merge(meta[["comp_id", "date_from"]], how="left", left_on="competition_id", right_on="comp_id")
-    # Optional: clean up comp_id column if you don't need it after the join
-    df = df.drop(columns=["comp_id"])
 
     col1, col2 = st.columns(2)
     metric = col1.selectbox("Metric", ["perf", "rank"])
     window = col2.radio("Window", ["90", "365"], horizontal=True)
 
-    y_col = f"{metric}{window}avg"
+    # Construct y-axis column name
+    y_col = f"{'rank' if metric == 'Ranking' else 'perf'}{window}avg"
+    if metric == "Ranking":
+        y_col += "_avg"  # to match column names like rank90avg_avg
+
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df["date_from"], y=df[y_col], name=metric))
-    fig.update_layout(title=f"{metric} {window}d Evolution", xaxis_title="Date", yaxis_title=metric)
+    fig.update_layout(
+    title=f"{metric} - {window}d Top 10 Avg",
+    xaxis_title="Competition Date",
+    yaxis_title="Rank" if metric == "Ranking" else "Performance")
     if metric == "rank":
         fig.update_yaxes(autorange="reversed")
 
