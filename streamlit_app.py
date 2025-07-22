@@ -10,17 +10,18 @@ def handle_global_search():
         if player:
             st.success(f"Found player: {search}")
             if st.button("Go to player page"):
-                st.experimental_set_query_params(view="player", personId=search)
+                st.query_params.update({"view": "player", "personId": search})
                 st.rerun()
             return
         comp = fetch_competition_by_id(search)
         if comp:
             st.success(f"Found competition: {comp[0]['name']}")
             if st.button("Go to competition page"):
-                st.experimental_set_query_params(view="competition", compId=search)
+                st.query_params.update({"view": "competition", "compId": search})
                 st.rerun()
             return
         st.error("No match found.")
+
 
 st.set_page_config(layout="wide")
 st.title("Rubik's Cube Analytics Dashboard")

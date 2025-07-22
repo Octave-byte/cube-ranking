@@ -36,5 +36,5 @@ def show_player_page(person_id):
     st.download_button("📄 Download Data as CSV", csv, "player_data.csv", "text/csv")
 
     if st.button("← Back to main view"):
-        st.experimental_set_query_params()
-        st.rerun()
+       st.query_params.clear()
+       st.rerun()
