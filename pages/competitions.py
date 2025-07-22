@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import plotly.graph_objects as go
 from api import SUPABASE_URL, HEADERS
+import uuid
 
 #test
 @st.cache_data(ttl=3600)
@@ -78,3 +79,9 @@ def show_competition_page(comp_id):
 
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("📄 Download Data as CSV", csv, "competition_data.csv", "text/csv")
+
+    # Back button (placed at the end of the function)
+if st.button("← Back to main view"):
+    st.query_params.clear()
+    st.query_params.update({"uuid": str(uuid.uuid4())})  # force rerun recognition
+    st.rerun()
