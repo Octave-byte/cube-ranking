@@ -3,6 +3,7 @@ from api import fetch_player_by_id, fetch_competition_by_id
 from pages.tabs import show_players_tab, show_competitions_tab
 
 params = st.query_params
+st.write("🔍 Current query params:", params)  # DEBUG line
 view = params.get("view", [None])[0]
 
 if view == "player":
@@ -35,6 +36,8 @@ def handle_global_search():
                 st.query_params.clear()
                 st.query_params.update({"view": "player", "personId": search})
                 st.rerun()  # Ensure rerun occurs immediately
+                st.write("⚠️ rerun should have triggered but you still see this?")  # this should never appear
+
             return
         comp = fetch_competition_by_id(search)
         if comp:
@@ -43,6 +46,8 @@ def handle_global_search():
                 st.query_params.clear()
                 st.query_params.update({"view": "competition", "compId": search})
                 st.rerun()
+                st.write("⚠️ rerun should have triggered but you still see this?")  # this should never appear
+
             return
         st.error("No match found.")
 

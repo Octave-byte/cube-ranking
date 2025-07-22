@@ -38,3 +38,4 @@ def show_player_page(person_id):
     if st.button("← Back to main view"):
        st.query_params.clear()
        st.rerun()
+       st.write("⚠️ rerun should have triggered but you still see this?")  # this should never appear
