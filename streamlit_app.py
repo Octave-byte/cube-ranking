@@ -1,6 +1,7 @@
 import streamlit as st
 from api import fetch_player_by_id, fetch_competition_by_id
 from pages.tabs import show_players_tab, show_competitions_tab
+import uuid
 
 params = st.query_params
 st.write("🔍 Current query params:", params)  # DEBUG line
@@ -34,7 +35,12 @@ def handle_global_search():
             st.success(f"Found player: {search}")
             if st.button("Go to player page"):
                 st.query_params.clear()
-                st.query_params.update({"view": "player", "personId": search})
+                #st.query_params.update({"view": "player", "personId": search})
+                st.query_params.update({
+                    "view": "player",
+                    "personId": search,
+                    "uuid": str(uuid.uuid4())  # 👈 force refresh
+                })
                 st.rerun()  # Ensure rerun occurs immediately
                 st.write("⚠️ rerun should have triggered but you still see this?")  # this should never appear
 
