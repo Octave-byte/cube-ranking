@@ -12,17 +12,19 @@ def fetch_competition_history(comp_id):
 
 @st.cache_data(ttl=3600)
 def fetch_competition_metadata(comp_id):
-    url = f"{SUPABASE_URL}/rest/v1/competitions?comp_id=eq.{comp_id}&select=id, name,city,country,date_from&limit=1"
+    url = f"{SUPABASE_URL}/rest/v1/competitions?comp_id=eq.{comp_id}&select=id, name,city,country,date_from"
     return requests.get(url, headers=HEADERS).json()
 
 def show_competition_page(comp_id):
     st.header(f"Competition Detail: {comp_id}")
     meta = fetch_competition_metadata(comp_id)
+    meta_df = pd.DataFrame(meta)  
     if not meta:
         st.error("Not found.")
         return
-
+    
     m = meta[0]
+
     st.subheader(f"{m['name']} ({m['city']}, {m['country']})")
     st.caption(f"Date: {m['date_from']}")
 
@@ -30,9 +32,7 @@ def show_competition_page(comp_id):
     if df.empty:
         st.error("No data.")
         return
-    df = df.merge(meta[["comp_id", "date_from"]], how="left", left_on="competition_id", right_on="comp_id")
-    # Optional: clean up comp_id column if you don't need it after the join
-    df = df.drop(columns=["comp_id"])
+    df = df.merge(meta_df[["id", "date_from"]], how="left", left_on="competition_id", right_on="id")
 
     col1, col2 = st.columns(2)
     metric = col1.selectbox("Metric", ["perf", "rank"])
@@ -41,7 +41,7 @@ def show_competition_page(comp_id):
     # Construct y-axis column name
     y_col = f"{'rank' if metric == 'Ranking' else 'perf'}{window}avg"
     if metric == "Ranking":
-        y_col += "_avg"  # to match column names like rank90avg_avg
+        y_col += "_avg"  
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df["date_from"], y=df[y_col], name=metric))
