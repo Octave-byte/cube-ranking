@@ -4,6 +4,7 @@ import requests
 import plotly.graph_objects as go
 from api import SUPABASE_URL, HEADERS
 
+#test
 @st.cache_data(ttl=3600)
 def fetch_competition_history(comp_id):
     url = f"{SUPABASE_URL}/rest/v1/competition_ranking?comp_id=eq.{comp_id}&select=*"
