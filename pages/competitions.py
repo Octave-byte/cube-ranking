@@ -6,7 +6,7 @@ from api import SUPABASE_URL, HEADERS
 
 @st.cache_data(ttl=3600)
 def fetch_competition_history(comp_id):
-    url = f"{SUPABASE_URL}/rest/v1/competition_ranking?competition_id=eq.{comp_id}&select=*&order=date.asc"
+    url = f"{SUPABASE_URL}/rest/v1/competition_ranking?comp_id=eq.{comp_id}&select=*&order=date.asc"
     return requests.get(url, headers=HEADERS).json()
 
 @st.cache_data(ttl=3600)
