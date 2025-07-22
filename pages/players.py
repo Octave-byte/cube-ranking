@@ -1,3 +1,4 @@
+# pages/player.py
 import streamlit as st
 import pandas as pd
 import requests
@@ -10,7 +11,18 @@ def fetch_player_history(person_id):
     return requests.get(url, headers=HEADERS).json()
 
 def show_player_page(person_id):
-    st.header(f"Player Detail: {person_id}")
+    # Header with back button
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.header(f"Player Detail: {person_id}")
+    with col2:
+        if st.button("← Back to main view", type="secondary"):
+            # Use the navigation function from main app
+            st.session_state.current_view = 'main'
+            st.session_state.selected_person_id = None
+            st.rerun()
+    
+    # Fetch and display data
     df = pd.DataFrame(fetch_player_history(person_id))
     if df.empty:
         st.error("No data found.")
@@ -28,14 +40,15 @@ def show_player_page(person_id):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df["date"], y=df[avg], name="Average"))
     fig.add_trace(go.Scatter(x=df["date"], y=df[best], name="Best"))
-    fig.update_layout(title="Ranking Evolution", xaxis_title="Date", yaxis_title="Rank", yaxis_autorange="reversed")
+    fig.update_layout(
+        title="Ranking Evolution", 
+        xaxis_title="Date", 
+        yaxis_title="Rank", 
+        yaxis_autorange="reversed"
+    )
 
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": True})
 
+    # Download button
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("📄 Download Data as CSV", csv, "player_data.csv", "text/csv")
-
-    if st.button("← Back to main view"):
-       st.query_params.clear()
-       st.rerun()
-       st.write("⚠️ rerun should have triggered but you still see this?")  # this should never appear

@@ -49,8 +49,31 @@ def show_players_tab():
     cols = [col for col in df.columns if col != "WCA Link"] + ["WCA Link"]
     df = df[cols]
 
-    # Display entire DataFrame
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    # Display DataFrame with selection capability
+    event = st.dataframe(
+        df, 
+        use_container_width=True, 
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="single-row"
+    )
+
+    # Handle row selection for navigation
+    if len(event.selection.rows) > 0:
+        selected_idx = event.selection.rows[0]
+        # Get original ID before column rename
+        original_data = pd.DataFrame(get_cached_players())
+        selected_person = original_data.iloc[selected_idx]['id']
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.info(f"Selected: {selected_person}")
+        with col2:
+            if st.button(f"View Player Details", type="primary"):
+                # Navigate to player page using session state
+                st.session_state.current_view = 'player'
+                st.session_state.selected_person_id = selected_person
+                st.rerun()
 
 def show_competitions_tab():
     data = get_cached_competitions()
@@ -66,7 +89,6 @@ def show_competitions_tab():
 
     for col in ["perf90avg", "perf365avg"]:
         df[col] = df[col] / 100
-
 
     # Rename columns
     df = df.rename(columns={
@@ -90,5 +112,29 @@ def show_competitions_tab():
     cols = [col for col in df.columns if col != "WCA Link"] + ["WCA Link"]
     df = df[cols]
 
-    # Display the full DataFrame
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    # Display DataFrame with selection capability
+    event = st.dataframe(
+        df, 
+        use_container_width=True, 
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="single-row"
+    )
+
+    # Handle row selection for navigation
+    if len(event.selection.rows) > 0:
+        selected_idx = event.selection.rows[0]
+        # Get original competition_id before column operations
+        original_data = pd.DataFrame(get_cached_competitions()).dropna()
+        selected_comp = original_data.iloc[selected_idx]['competition_id']
+        comp_name = original_data.iloc[selected_idx]['name']
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.info(f"Selected: {comp_name} ({selected_comp})")
+        with col2:
+            if st.button(f"View Competition Details", type="primary"):
+                # Navigate to competition page using session state
+                st.session_state.current_view = 'competition'
+                st.session_state.selected_comp_id = selected_comp
+                st.rerun()
