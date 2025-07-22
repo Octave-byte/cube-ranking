@@ -40,7 +40,7 @@ def show_competition_page(comp_id):
 
     # Construct y-axis column name
     y_col = f"{'rank' if metric == 'rank' else 'perf'}{window}avg"
-    if metric == "Ranking":
+    if metric == "rank":
         y_col += "_avg"  
 
     fig = go.Figure()
@@ -48,7 +48,7 @@ def show_competition_page(comp_id):
     fig.update_layout(
     title=f"{metric} - {window}d Top 10 Avg",
     xaxis_title="Competition Date",
-    yaxis_title="Rank" if metric == "Ranking" else "Performance")
+    yaxis_title="Rank" if metric == "rank" else "Performance")
     if metric == "rank":
         fig.update_yaxes(autorange="reversed")
 
