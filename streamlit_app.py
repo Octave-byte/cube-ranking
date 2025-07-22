@@ -12,7 +12,7 @@ def handle_global_search():
             if st.button("Go to player page"):
                 st.query_params.clear()
                 st.query_params.update({"view": "player", "personId": search})
-                st.experimental_rerun()  # Ensure rerun occurs immediately
+                st.rerun()  # Ensure rerun occurs immediately
             return
         comp = fetch_competition_by_id(search)
         if comp:
@@ -20,7 +20,7 @@ def handle_global_search():
             if st.button("Go to competition page"):
                 st.query_params.clear()
                 st.query_params.update({"view": "competition", "compId": search})
-                st.experimental_rerun()
+                st.rerun()
             return
         st.error("No match found.")
 

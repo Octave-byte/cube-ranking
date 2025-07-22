@@ -37,4 +37,4 @@ def show_player_page(person_id):
 
     if st.button("← Back to main view"):
        st.query_params.clear()
-       st.experimental_rerun()
+       st.rerun()
