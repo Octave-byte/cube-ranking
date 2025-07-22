@@ -34,6 +34,12 @@ def show_competition_page(comp_id):
         return
     df = df.merge(meta_df[["id", "date_from"]], how="left", left_on="competition_id", right_on="id")
 
+    # Convert performance data from centiseconds to seconds
+    perf_columns = [col for col in df.columns if 'perf' in col and col != 'date_from']
+    for col in perf_columns:
+        if col in df.columns:
+            df[col] = df[col] / 100
+
     col1, col2 = st.columns(2)
     metric = col1.selectbox("Metric", ["perf", "rank"])
     window = col2.radio("Window", ["90", "365"], horizontal=True)
@@ -43,20 +49,32 @@ def show_competition_page(comp_id):
     if metric == "rank":
         y_col += "_avg"  
 
+    # Create the plot
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df["date_from"], y=df[y_col], name=metric))
-    fig.update_layout(
-    title=f"{metric} - {window}d Top 10 Avg",
-    xaxis_title="Competition Date",
-    yaxis_title="Rank" if metric == "rank" else "Performance")
+    fig.add_trace(go.Scatter(
+        x=df["date_from"], 
+        y=df[y_col], 
+        name=f"{metric.capitalize()} {window}d",
+        mode='lines+markers'
+    ))
+    
+    # Configure layout based on metric type
     if metric == "rank":
-        fig.update_yaxes(autorange="reversed")
+        fig.update_layout(
+            title=f"Rank - {window}d Top 10 Avg",
+            xaxis_title="Competition Date",
+            yaxis_title="Rank",
+            yaxis=dict(autorange="reversed")  # Lower rank numbers are better
+        )
+    else:  # performance
+        fig.update_layout(
+            title=f"Performance - {window}d Top 10 Avg",
+            xaxis_title="Competition Date",
+            yaxis_title="Performance (seconds)",
+            yaxis=dict(autorange=True)  # Reset autorange for performance
+        )
 
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": True})
 
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("📄 Download Data as CSV", csv, "competition_data.csv", "text/csv")
-
-    if st.button("← Back to main view"):
-        st.experimental_set_query_params()
-        st.rerun()
